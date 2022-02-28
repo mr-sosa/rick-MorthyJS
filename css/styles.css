@@ -1,11 +1,13 @@
 body {
   font-family: 'Lato', sans-serif;
+  text-align-last: center;
 }
 
-#container{
+#container-list{
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .card {
