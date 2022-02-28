@@ -1,8 +1,8 @@
 const API_RICK_MORTHY = 'https://rickandmortyapi.com/api/character';
-const containerRef = document.getElementById('container');
+const containerList = document.getElementById('container-list');
+const containerDet = document.getElementById("container-detail");
 
-
-async function getData() {
+async function getDataAll() {
   const result = await fetch(API_RICK_MORTHY);
   const data = await result.json();
   console.log('result', data);
@@ -10,75 +10,126 @@ async function getData() {
 }
 
 async function render(){
-    const data = await getData();
-    const row = document.createElement('div');
-    row.className = 'row gy-5 mx-n5';
-    const dataMapped = data.results.map((character) => {
-      
-        const auxcol = document.createElement('div');
-        auxcol.className = 'col-md-4 col-sm-12 m-10 p-10';
-        const card = document.createElement('div');
-        card.className = 'card col-12';
 
-        const img = document.createElement('img');
-        img.className = 'card-img-top'
-        img.src = character.image;
-        img.alt = character.name;
+  while (containerList.firstChild != null){
+    containerList.removeChild(containerList.firstChild);
+  }
 
-        const body = document.createElement('div');
-        body.className = 'card-body'
-          const title = document.createElement('h5');
-          title.innerText = character.name;
-          title.className = 'card-title';
-          body.appendChild(title);
+  containerList.style.display = "flex";
+  containerDet.style.display = "none";
+  const data = await getDataAll();
+  const dataMapped = data.results.map((character) => {
+    const div = document.createElement('div');
+    div.className = 'card text-white bg-dark mb-3';
 
-          const status_row = document.createElement('div');
-          status_row.className = 'row';
-            const status_lbl = document.createElement('h6');
-            status_lbl.className = 'col-6';
-            status_lbl.innerText = 'Status';
-            status_row.appendChild(status_lbl);
+    const image = document.createElement('img');
+    image.className = 'card-img-top';
+    image.src = character.image;
+    div.appendChild(image);
 
-            const status = document.createElement('h6');
-            status.className = 'col-6';
-            status.innerText = character.status;
-            status_row.appendChild(status);
-          body.appendChild(status_row);
+    const body = document.createElement('div');
+    body.className = 'card-body';
 
-          const species_row = document.createElement('div');
-          species_row.className = 'row';
-            const species_lbl = document.createElement('h6');
-            species_lbl.className = 'col-6';
-            species_lbl.innerText = 'Species';
-            species_row.appendChild(species_lbl);
+    const name = document.createElement('h5');
+    name.textContent = character.name;
+    name.className = 'card-title';
+    body.appendChild(name);
 
-            const species = document.createElement('h6');
-            species.className = 'col-6';
-            species.innerText = character.species;
-            species_row.appendChild(species);
-          body.appendChild(species_row);
+    const button = document.createElement('button');
+    button.textContent = 'Show Detail';
+    button.addEventListener("click", function (){detail(character.id)}, false);
+    button.className = 'btn btn-primary';
+    body.appendChild(button);
 
-          const origin_row = document.createElement('div');
-          origin_row.className = 'row';
-            const origin_lbl = document.createElement('h6');
-            origin_lbl.className = 'col-6';
-            origin_lbl.innerText = 'Origin';
-            origin_row.appendChild(origin_lbl);
+    div.appendChild(body);
+    containerList.appendChild(div);
+  })
+}
 
-            const origin = document.createElement('h6');
-            origin.className = 'col-6';
-            origin.innerText = character.origin.name;
-            origin_row.appendChild(origin);
-          body.appendChild(origin_row);
+async function getData(id){
+  const result = await fetch(API_RICK_MORTHY+'/'+id);
+  const data = await result.json();
+  console.log('result', data);
+  return data;
+}
 
-        card.appendChild(img);
-        card.appendChild(body);
+async function detail(id) {
+  
+  while (containerDet.firstChild != null){
+    containerDet.removeChild(containerDet.firstChild);
+  }
 
-      auxcol.appendChild(card);
-      row.appendChild(auxcol);
-      containerRef.appendChild(row);
-       
-    })
+  // Mustra el detail y oculta la lista 
+  containerList.style.display = "none";
+  containerDet.style.display = "flex";
+
+  containerDet.style.justifyContent = "center";
+  
+  const character = await getData(id);
+  const div = document.createElement('div');
+  div.className = 'card text-white bg-dark mb-3';
+
+  const image = document.createElement('img');
+  image.className = 'card-img-top';
+  image.src = character.image;
+  div.appendChild(image);
+  
+  const body = document.createElement('div');
+  body.className = 'card-body';
+
+  const name = document.createElement('h5');
+  name.textContent = character.name;
+  name.className = 'card-title';
+  body.appendChild(name);
+
+  const parrafo1 = document.createElement('p');
+  parrafo1.textContent = 'Gender: ' + character.gender;
+  parrafo1.className = 'card-text';
+  body.appendChild(parrafo1);
+
+  const parrafo2 = document.createElement('p');
+  parrafo2.textContent = 'Specie: '+ character.species;
+  parrafo2.className = 'card-text';
+  body.appendChild(parrafo2);
+
+  const parrafo3 = document.createElement('p');
+  parrafo3.textContent = 'Location: '+ character.location.name;
+  parrafo3.className = 'card-text';
+  body.appendChild(parrafo3);
+
+  const divList = document.createElement('div');
+  divList.className = "btn-group";
+  
+  divList.innerHTML = '<button type="button" class="btn btn-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">'+
+                            'Episodes'+
+                          '</button>'
+
+  const ul = document.createElement('ul');
+  ul.className = "dropdown-menu";
+  
+  character.episode.map((episode, id) =>{
+    const li =document.createElement('li');
+    const a = document.createElement('a');
+    a.className = "dropdown-item";
+    var link = episode.split("/");
+    a.textContent = "Episode - " + link[link.length - 1];
+    a.href = episode;
+    li.appendChild(a);
+    ul.appendChild(li);
+  })
+
+  divList.appendChild(ul);
+
+  body.appendChild(divList);
+  div.appendChild(body);
+  const button = document.createElement('button');
+  button.textContent = 'Home';
+  button.addEventListener("click", render, false);
+  button.className = 'btn btn-primary';
+  div.appendChild(button);
+  
+  
+  containerDet.appendChild(div);
 }
 
 render();
